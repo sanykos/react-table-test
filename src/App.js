@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import _ from 'lodash'
 import Loader from './Loader/Loader'
 import Table from './Table/Table'
+import DetailRowView from './DetailRowView/DetailRowView'
 import './App.css';
 
 
@@ -12,6 +13,7 @@ class App extends Component {
     data: [],
     sort: 'asc',
     sortField: 'id',
+    row: null
   }
 
 // Ждем когда сформируется дом дерево
@@ -37,6 +39,10 @@ class App extends Component {
     //console.log(field)
   }
 
+  onRowSelect = row => {
+    this.setState({row})
+  }
+
   render() {
     return(
       <div className="container">
@@ -47,7 +53,13 @@ class App extends Component {
           : <Table data={this.state.data} 
             onSort={this.onSort}
             sort={this.state.sort}
-            sortField={this.state.sortField}/>
+            sortField={this.state.sortField}
+            onRowSelect={this.onRowSelect}/>
+        }
+        {
+          this.state.row 
+          ? <DetailRowView person={this.state.row} />
+          : null
         }
       </div>
     )
