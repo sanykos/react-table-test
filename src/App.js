@@ -59,6 +59,7 @@ class App extends Component {
     this.setState({row})
   }
 
+
   pageChangeHandler = ({selected}) => {
     this.setState({currentPage: selected})
   }
