@@ -5,6 +5,7 @@ import Loader from './Loader/Loader'
 import Table from './Table/Table'
 import DetailRowView from './DetailRowView/DetailRowView'
 import ModeSelector from './ModeSelector/ModeSelector'
+import TableSearch from './TableSearch/TableSearch'
 import './App.css';
 
 
@@ -13,6 +14,7 @@ class App extends Component {
   state = {
     isModeSelected: false,
     isLoading: false,
+    search: '',
     data: [],
     sort: 'asc',
     sortField: 'id',
@@ -61,6 +63,23 @@ class App extends Component {
     this.setState({currentPage: selected})
   }
 
+  searchHandler = search => {
+    this.setState({search, currentPage:0})
+  }
+
+  getFilteredData() {
+    const  {data, search} = this.state
+
+    if(!search) {
+      return data
+    }
+
+    return data.filter(item => {
+      return item['firstName'].toLowerCase().includes(search.toLowerCase())
+    })
+
+  }
+
   render() {
 
     const pageSize = 50
@@ -72,20 +91,27 @@ class App extends Component {
         </div>
       )
     }
+     
+    //debugger
 
-    const displayData = _.chunk(this.state.data, pageSize)[this.state.currentPage]
+    const filteredData = this.getFilteredData()
+    const pageCount = Math.ceil(filteredData.length / pageSize)
+
+    const displayData = _.chunk(filteredData, pageSize)[this.state.currentPage]
 
     return(
       <div className="container">
-         <ModeSelector onSelect={this.modeSelectHandler}/>
         {
           this.state.isLoading 
           ? <Loader />
-          : <Table data={displayData} 
-            onSort={this.onSort}
-            sort={this.state.sort}
-            sortField={this.state.sortField}
-            onRowSelect={this.onRowSelect}/>
+          : <React.Fragment>
+              <TableSearch onSearch={this.searchHandler}/>
+              <Table data={displayData} 
+                    onSort={this.onSort}
+                    sort={this.state.sort}
+                    sortField={this.state.sortField}
+                    onRowSelect={this.onRowSelect}/>
+            </React.Fragment>
         }
 
         {
@@ -96,7 +122,7 @@ class App extends Component {
               nextLabel={'>'}
               breakLabel={'...'}
               breakClassName={'break-me'}
-              pageCount={20}
+              pageCount={pageCount}
               marginPagesDisplayed={2}
               pageRangeDisplayed={5}
               onPageChange={this.pageChangeHandler}
