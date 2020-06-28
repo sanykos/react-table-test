@@ -1,24 +1,28 @@
 import React, {Component} from 'react';
 import _ from 'lodash'
+import ReactPaginate from 'react-paginate';
 import Loader from './Loader/Loader'
 import Table from './Table/Table'
 import DetailRowView from './DetailRowView/DetailRowView'
+import ModeSelector from './ModeSelector/ModeSelector'
 import './App.css';
 
 
 class App extends Component {
 
   state = {
-    isLoading: true,
+    isModeSelected: false,
+    isLoading: false,
     data: [],
     sort: 'asc',
     sortField: 'id',
-    row: null
+    row: null,
+    currentPage: 0
   }
 
 // Ждем когда сформируется дом дерево
-  async componentDidMount() {
-    const response = await fetch(`http://www.filltext.com/?rows=32&id=%7Bnumber%7C1000%7D&firstName=%7BfirstName%7D&lastName=%7BlastName%7D&email=%7Bemail%7D&phone=%7Bphone%7C(xxx)xxx-xx-xx%7D&address=%7BaddressObject%7D&description=%7Blorem%7C32%7D`)
+  async fetchData(url) {
+    const response = await fetch(url)
     const data = await response.json()
    // console.log(data)
    this.setState({
@@ -29,33 +33,86 @@ class App extends Component {
 
   onSort  = sortField =>  {
     const clonedData = this.state.data.concat()
-    const sortType = this.state.sort === 'asc' ? 'desc' : 'asc'
-    const orderedData = _.orderBy(clonedData, sortField, sortType)
+    const sort = this.state.sort === 'asc' ? 'desc' : 'asc'
+
+    const data = _.orderBy(clonedData, sortField, sort)
     this.setState({
-      data: orderedData,
-      sort: sortType,
+      data: data,
+      sort: sort,
       sortField: sortField
     })
     //console.log(field)
+  }
+
+  modeSelectHandler = url => {
+    this.setState({
+      isModeSelected: true,
+      isLoading: true
+    })
+
+    this.fetchData(url)
   }
 
   onRowSelect = row => {
     this.setState({row})
   }
 
+  pageChangeHandler = ({selected}) => {
+    this.setState({currentPage: selected})
+  }
+
   render() {
+
+    const pageSize = 50
+
+    if(!this.state.isModeSelected) {
+      return (
+        <div className="container">
+          <ModeSelector onSelect={this.modeSelectHandler}/>
+        </div>
+      )
+    }
+
+    const displayData = _.chunk(this.state.data, pageSize)[this.state.currentPage]
+
     return(
       <div className="container">
-        <h1>Start</h1>
+         <ModeSelector onSelect={this.modeSelectHandler}/>
         {
           this.state.isLoading 
           ? <Loader />
-          : <Table data={this.state.data} 
+          : <Table data={displayData} 
             onSort={this.onSort}
             sort={this.state.sort}
             sortField={this.state.sortField}
             onRowSelect={this.onRowSelect}/>
         }
+
+        {
+          this.state.data.length > pageSize
+          ?
+            <ReactPaginate
+              previousLabel={'<'}
+              nextLabel={'>'}
+              breakLabel={'...'}
+              breakClassName={'break-me'}
+              pageCount={20}
+              marginPagesDisplayed={2}
+              pageRangeDisplayed={5}
+              onPageChange={this.pageChangeHandler}
+              containerClassName={'pagination'}
+              activeClassName={'active'}
+              pageClassName={'page-item'}
+              pageLinkClassName={'page-link'}
+              previousClassName={'page-item'}
+              nextClassName={'next-item'}
+              previousLinkClassName={'page-link'}
+              nextLinkClassName={'page-link'}
+              forcePage	={this.state.currentPage}
+            />
+          : null
+        }
+
         {
           this.state.row 
           ? <DetailRowView person={this.state.row} />
