@@ -1,4 +1,5 @@
 import React, {Component} from 'react';
+import _ from 'lodash'
 import Loader from './Loader/Loader'
 import Table from './Table/Table'
 import './App.css';
@@ -8,7 +9,9 @@ class App extends Component {
 
   state = {
     isLoading: true,
-    data: []
+    data: [],
+    sort: 'asc',
+    sortField: 'id',
   }
 
 // Ждем когда сформируется дом дерево
@@ -18,8 +21,20 @@ class App extends Component {
    // console.log(data)
    this.setState({
      isLoading: false,
-     data: data
+     data: _.orderBy(data, this.state.sortField, this.state.sort)
    })
+  }
+
+  onSort  = sortField =>  {
+    const clonedData = this.state.data.concat()
+    const sortType = this.state.sort === 'asc' ? 'desc' : 'asc'
+    const orderedData = _.orderBy(clonedData, sortField, sortType)
+    this.setState({
+      data: orderedData,
+      sort: sortType,
+      sortField: sortField
+    })
+    //console.log(field)
   }
 
   render() {
@@ -29,7 +44,10 @@ class App extends Component {
         {
           this.state.isLoading 
           ? <Loader />
-          : <Table data={this.state.data}/>
+          : <Table data={this.state.data} 
+            onSort={this.onSort}
+            sort={this.state.sort}
+            sortField={this.state.sortField}/>
         }
       </div>
     )
