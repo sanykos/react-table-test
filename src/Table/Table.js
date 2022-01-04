@@ -1,31 +1,31 @@
 import React from 'react'
 
 
-export default props => {
+export default ({onSort, data, sort, sortField, onRowSelect }) => {
     return (<table className="table">
          <thead>
             <tr>
-                <th onClick={props.onSort.bind(null, 'id')}>id
-                {props.sortField === 'id' ? <sup>{props.sort}</sup>: null}
+                <th onClick={onSort.bind(null, 'id')}>id
+                {sortField === 'id' ? <sup>{sort}</sup>: null}
                 </th>
-                <th onClick={props.onSort.bind(null, 'firstName')}>firstName
-                {props.sortField === 'firstName' ? <sup>{props.sort}</sup>: null}
+                <th onClick={onSort.bind(null, 'firstName')}>firstName
+                {sortField === 'firstName' ? <sup>{sort}</sup>: null}
                 </th>
-                <th onClick={props.onSort.bind(null, 'lastName')}>lastName 
-                {props.sortField === 'lastName' ? <sup>{props.sort}</sup>: null}
+                <th onClick={onSort.bind(null, 'lastName')}>lastName 
+                {sortField === 'lastName' ? <sup>{sort}</sup>: null}
                 </th>
-                <th onClick={props.onSort.bind(null, 'email')}>email
-                {props.sortField === 'email' ? <sup>{props.sort}</sup>: null}
+                <th onClick={onSort.bind(null, 'email')}>email
+                {sortField === 'email' ? <sup>{sort}</sup>: null}
                 </th>
-                <th onClick={props.onSort.bind(null, 'phone')}>phone
-                {props.sortField === 'phone' ? <sup>{props.sort}</sup>: null}
+                <th onClick={onSort.bind(null, 'phone')}>phone
+                {sortField === 'phone' ? <sup>{sort}</sup>: null}
                 </th>
             </tr>
         </thead>
         <tbody>
             {
-                props.data.map(item => (
-                    <tr key={item.id+item.phone} onClick={props.onRowSelect.bind(null, item)}>
+                data?.map(item => (
+                    <tr key={item.id+item.phone} onClick={onRowSelect.bind(null, item)}>
                         <td>{item.id}</td>
                         <td>{item.firstName}</td>
                         <td>{item.lastName}</td>

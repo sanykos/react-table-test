@@ -1,5 +1,5 @@
-import React, {Component} from 'react';
-import _ from 'lodash'
+import React, {useState} from 'react';
+import {orderBy, chunk} from 'lodash'
 import ReactPaginate from 'react-paginate';
 import Loader from './Loader/Loader'
 import Table from './Table/Table'
@@ -9,116 +9,92 @@ import TableSearch from './TableSearch/TableSearch'
 import './App.css';
 
 
-class App extends Component {
 
-  state = {
-    isModeSelected: false,
-    isLoading: false,
-    search: '',
-    data: [],
-    sort: 'asc',
-    sortField: 'id',
-    row: null,
-    currentPage: 0
-  }
+
+const App = () => {
+  const [isModeSelected, setIsModeSelected] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [search, setSearch] = useState('');
+  const [data, setData] = useState([]);
+  const [sort, setSort] = useState('asc');
+  const [sortField, setSortField] = useState('id');
+  const [row, setRow] = useState(null);
+  const [currentPage, setCurrentPage] = useState(0);
+  
 
 // Ждем когда сформируется дом дерево
-  async fetchData(url) {
-    const response = await fetch(url)
-    const data = await response.json()
-   // console.log(data)
-   this.setState({
-     isLoading: false,
-     data: _.orderBy(data, this.state.sortField, this.state.sort)
-   })
+  const fetchData = async(url) => {
+    const response = await fetch(url);
+    const data = await response.json();
+    const orderData = orderBy(data, sortField, sort);
+    setIsLoading(false);
+    setData(orderData);
   }
 
-  onSort  = sortField =>  {
-    const clonedData = this.state.data.concat()
-    const sort = this.state.sort === 'asc' ? 'desc' : 'asc'
+  const onSort  = sortField =>  {
+    const clonedData = data.concat()
+    const sortType = sort === 'asc' ? 'desc' : 'asc'
 
-    const data = _.orderBy(clonedData, sortField, sort)
-    this.setState({
-      data: data,
-      sort: sort,
-      sortField: sortField
-    })
-    //console.log(field)
+    const dataOrder = orderBy(clonedData, sortField, sortType);
+    setSort(sort);
+    setData(dataOrder);
+    setSortField(sortField);
   }
 
-  modeSelectHandler = url => {
-    this.setState({
-      isModeSelected: true,
-      isLoading: true
-    })
-
-    this.fetchData(url)
+  const modeSelectHandler = (url) => {
+    setIsLoading(true);
+    setIsModeSelected(true);
+    fetchData(url)
   }
 
-  onRowSelect = row => {
-    this.setState({row})
+  const onRowSelect = row => {
+    setRow(row)
   }
 
 
-  pageChangeHandler = ({selected}) => {
-    this.setState({currentPage: selected})
+  const pageChangeHandler = ({selected}) => {
+    setCurrentPage(selected)
   }
 
-  searchHandler = search => {
-    this.setState({search, currentPage:0})
+  const searchHandler = search => {
+    setSearch(search)
+    setCurrentPage(0);
   }
 
-  getFilteredData() {
-    const  {data, search} = this.state
-
+  const getFilteredData = () => {
     if(!search) {
       return data
     }
 
-    return data.filter(item => {
-      return item['firstName'].toLowerCase().includes(search.toLowerCase())
-    })
-
+    return data.filter(item => item['firstName'].toLowerCase().includes(search.toLowerCase()))
   }
 
-  render() {
+  const pageSize = 50;
 
-    const pageSize = 50
+  const filteredData = getFilteredData()
+  const pageCount = Math.ceil(filteredData.length / pageSize)
 
-    if(!this.state.isModeSelected) {
-      return (
+  const displayData = chunk(filteredData, pageSize)[currentPage];
+
+
+  return (
+    <>
+        {!isModeSelected && (<div className="container">
+          <ModeSelector onSelect={modeSelectHandler}/>
+        </div>)}
         <div className="container">
-          <ModeSelector onSelect={this.modeSelectHandler}/>
-        </div>
-      )
-    }
-     
-    //debugger
-
-    const filteredData = this.getFilteredData()
-    const pageCount = Math.ceil(filteredData.length / pageSize)
-
-    const displayData = _.chunk(filteredData, pageSize)[this.state.currentPage]
-
-    return(
-      <div className="container">
-        {
-          this.state.isLoading 
-          ? <Loader />
-          : <React.Fragment>
-              <TableSearch onSearch={this.searchHandler}/>
-              <Table data={displayData} 
-                    onSort={this.onSort}
-                    sort={this.state.sort}
-                    sortField={this.state.sortField}
-                    onRowSelect={this.onRowSelect}/>
-            </React.Fragment>
-        }
-
-        {
-          this.state.data.length > pageSize
-          ?
-            <ReactPaginate
+          {isLoading 
+          ? <Loader /> 
+          : <> 
+            <TableSearch onSearch={searchHandler}/>
+            <Table data={displayData} 
+                  onSort={onSort}
+                  sort={sort}
+                  sortField={sortField}
+                  onRowSelect={onRowSelect}/>
+            </>}
+            {data.length > pageSize 
+              && <ReactPaginate
               previousLabel={'<'}
               nextLabel={'>'}
               breakLabel={'...'}
@@ -126,7 +102,7 @@ class App extends Component {
               pageCount={pageCount}
               marginPagesDisplayed={2}
               pageRangeDisplayed={5}
-              onPageChange={this.pageChangeHandler}
+              onPageChange={pageChangeHandler}
               containerClassName={'pagination'}
               activeClassName={'active'}
               pageClassName={'page-item'}
@@ -135,19 +111,15 @@ class App extends Component {
               nextClassName={'next-item'}
               previousLinkClassName={'page-link'}
               nextLinkClassName={'page-link'}
-              forcePage	={this.state.currentPage}
+              forcePage	={currentPage}
             />
-          : null
+          }
+          {
+          row && <DetailRowView person={row} />
         }
-
-        {
-          this.state.row 
-          ? <DetailRowView person={this.state.row} />
-          : null
-        }
-      </div>
-    )
-  }
+        </div>
+    </>
+  )
 }
 
 export default App;
