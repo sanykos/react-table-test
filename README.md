@@ -1,9 +1,11 @@
 ## App run
 
-In the project directory, you can run:
+Запуск приложения:
 
 ### `npm install`
 ### `npm start`
+
+[Просмотр приложения](https://sanykos.github.io/react-table-test/)
 
 ## Задание
 
