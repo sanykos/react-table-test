@@ -1,9 +1,7 @@
-## App run
+## Запуска приложения
 
-Запуск приложения:
-
-### `npm install`
-### `npm start`
+* `npm install`
+* `npm start`
 
 [Просмотр приложения](https://sanykos.github.io/react-table-test/)
 
