@@ -20,7 +20,7 @@ const App = () => {
   const [sortField, setSortField] = useState('id');
   const [row, setRow] = useState(null);
   const [currentPage, setCurrentPage] = useState(0);
-  
+
 
 // Ждем когда сформируется дом дерево
   const fetchData = async(url) => {
@@ -79,13 +79,11 @@ const App = () => {
 
   return (
     <>
-        {!isModeSelected && (<div className="container">
-          <ModeSelector onSelect={modeSelectHandler}/>
-        </div>)}
+        <ModeSelector onSelect={modeSelectHandler}/>
         <div className="container">
           {isLoading 
           ? <Loader /> 
-          : <> 
+          : isModeSelected && <> 
             <TableSearch onSearch={searchHandler}/>
             <Table data={displayData} 
                   onSort={onSort}
